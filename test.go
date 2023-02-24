@@ -1,27 +1,39 @@
 package main
 
 import (
-    "database/sql"    "fmt"
-    "github.com/lib/pq"
-    _ "github.com/lib/pq"
+	"database/sql"
+	"fmt"
+
+	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
+
 type Store struct {
     ID int    
 	Name string
     Branches []*Branch
 }
+
 type Branch struct {
     ID int    
 	Name string
-    Phone_numbers []string    
-	Store_id int
-    Vacancy []*Vacancy
+    PhoneNumbers []string    
+    Address *Address
+    Vacancies []*Vacancy
 }
+
 type Vacancy struct {
     ID int    
-	Title string
-    Branch_id int
+	Name string
+    Salary float64
 }
+
+type Address struct {
+    ID int
+    City string
+    StreetName string
+}
+
 type Response struct {
     Stores []*Store    
 	Branches []*Branch
@@ -34,228 +46,219 @@ func check(err error) {
 	}
 }
 
+
 func main(){    
 	connect := fmt.Sprintf("host=%s port=%d user=%s " + 
         "password=%s dbname=%s sslmode=disable",         
-		"localhost", 5432, "amirkhan", "Amirkhan2005", "store1")
-
-
+		"localhost", 5432, "amirkhan", "Amirkhan2005", "migration")
         
     db, err := sql.Open("postgres", connect)    
 	check(err)
     defer db.Close()
+
+    tx, err := db.Begin()
+    check(err)
+   
+    
     stores := []Store{
-        {
-            ID: 1,            
+        {           
 			Name: "Korzinka",
-            Branches: []*Branch{                {
-                    Store_id: 1,                    
-					Name: "Novza",
-                    Phone_numbers: []string{                        
+            Branches: []*Branch{                
+                {                   
+					Name: "Kohinur",
+                    PhoneNumbers: []string{                        
 						"+998330959595",
                         "+998333333333",                    
 					},
-                    Vacancy: []*Vacancy{                        
-						{
-                            Branch_id: 1,                            
-							Title: "Farroshlik",
+                    Address: &Address{
+                        City: "Toshkent Olmazor",
+                        StreetName: "Beruniy",
+                    },
+                    Vacancies: []*Vacancy{                        
+						{                            
+							Name: "Kassir",
+                            Salary: 4000000,
                         },                        
 						{
-                            Branch_id: 1,                            
-							Title: "Buhgalter",
+							Name: "Oxranik",
+                            Salary: 3500000,
+
                         },                    
 					},
                 },                
-				{
-                    Store_id: 1,                    
-					Name: "Beruniy",
-                    Phone_numbers: []string{                        
-						"+998330959599",
-                        "+998333333388",                    
+				{                    
+					Name: "Qatorto'l",
+                    PhoneNumbers: []string{                        
+						"+998956545665",
+                        "+998915545445",                    
 					},
-                    Vacancy: []*Vacancy{
+                    Address: &Address{
+                        City: "Toshkent Chilonzor",
+                        StreetName: "Mirzo Ulug'bek",
+                    },
+                    Vacancies: []*Vacancy{
                         {                            
-							Branch_id: 2,
-                            Title: "Admin",                        
+                            Name: "Tozalovchi", 
+                            Salary: 3000000,                       
 						},
                         {                            
-							Branch_id: 2,
-                            Title: "Haydovchi",                        
+                            Name: "Manager",
+                            Salary: 4500000,
+                        
 						},
                     },                
 				},
             },        
 		}, 
         {
-            ID: 2,            
 			Name: "Makro",
             Branches: []*Branch{                
 				{
-                    Store_id: 2,                    
 					Name: "Sergeli",
-                    Phone_numbers: []string{                        
+                    PhoneNumbers: []string{                        
 						"+998990959599",
                         "+998903333388",                    
 					},
-                    Vacancy: []*Vacancy{                        
+                    Address: &Address{
+                        City: "Toshkent Sergeli",
+                        StreetName: "Ozodlik ko'chasi",
+                    },
+                    Vacancies: []*Vacancy{                        
 						{
-                            Branch_id: 1,                            
-							Title: "Qo'riqchi",
+							Name: "Kassir",
+                            Salary: 3500000,
+
                         },                        
 						{
-                            Branch_id: 1,                            
-							Title: "Yuk tashuvchi",
+							Name: "Oxranik",
+                            Salary: 2500000,
+
                         },                    
 					},
                 },                
 				{
-                    Store_id: 2,                    
-					Name: "Qoraqamish",
-                    Phone_numbers: []string{                        
+					Name: "Makro Tinchlik metro",
+                    PhoneNumbers: []string{                        
 						"+998880959599",
                         "+998883333388",                    
 					},
-                    Vacancy: []*Vacancy{                        
+                    Address: &Address{
+                        City: "Toshkent Olmazor",
+                        StreetName: "Olmazor ko'chasi",
+                    },
+                    Vacancies: []*Vacancy{                        
 						{
-                            Branch_id: 2,                            
-							Title: "Sotuvchi",
+							Name: "Tozalovchi",
+                            Salary: 3500000,
+
                         },                        
 						{
-                            Branch_id: 2,                            
-							Title: "Admin",
+							Name: "Admin",
+                            Salary: 4000000,
+
                         },                    
 					},
                 },            
 			},
         },
-        {            
-			ID: 3,
-            Name: "Havas",            
-			Branches: []*Branch{
-                {                    
-					Store_id: 3,
-                    Name: "Mirzo Ulug'bek",                    
-					Phone_numbers: []string{
-                        "+998990999999",                        
-						"+998905555888",
-                    },                    
-					Vacancy: []*Vacancy{
-                        {                            
-							Branch_id: 1,
-                            Title: "Qo'riqchi",                        
-						},
-                        {                            
-							Branch_id: 1,
-                            Title: "Kassir",                        
-						},
-						},                
-					},
-						{                    
-							Store_id: 3,
-							Name: "Chorsu",                    
-							Phone_numbers: []string{
-								"+998881263883",                        
-								"+998905956081",
-							},                    
-							Vacancy: []*Vacancy{
-								{                            
-									Branch_id: 2,
-									Title: "Farrosh",                        
-								},
-								{                            
-									Branch_id: 2,
-									Title: "Meneger",                        
-								},
-							},                
-						},
-					},        
-				},
-			}
-	
+    } 
 
-	
-
-    // CREATE TABLE 
-    _, err1 := db.Exec("CREATE TABLE stores(id serial primary key, name varchar(20))") 
-	check(err1)   
-	 _, err2 := db.Exec("CREATE TABLE branches(id serial primary key, name varchar(20), store_id int references stores(id), phone_numbers varchar[])") 
-	check(err2)
-    _, err3 := db.Exec("CREATE TABLE vacancies(id serial primary key,  title varchar(30), branch_id int references branches(id))") 
-	check(err3)    
-	_, errbv := db.Exec("create table branches_vacancies(branch_id int references branches(id), vacancy_id int references vacancies(id))")
-	check(errbv)
     
 
     // INSERT
-    for _, x := range stores {        
-		_, err := db.Exec("insert into stores(name) values($1)", x.Name)
-        check(err)
-        for _, i := range x.Branches{            
-			_, err := db.Exec("insert into branches(name, phone_numbers, store_id) values($1, $2, $3)", i.Name, pq.Array(i.Phone_numbers), i.Store_id)
-            check(err)
-            for  _, j := range i.Vacancy {                
-				_, err := db.Exec("insert into vacancies(title, branch_id) values($1, $2)", j.Title, j.Branch_id)
-                check(err)            
+    for _, store := range stores {      
+        var storeID int  
+		err := tx.QueryRow("INSERT INTO stores (name) VALUES ($1) RETURNING id", store.Name).Scan(&storeID)
+        if err != nil {
+            tx.Rollback()
+            return
+        }
+        for _, branch := range store.Branches{  
+            var branchID int  
+          
+            err := tx.QueryRow("INSERT INTO branches (name, phone_numbers, store_id) VALUES ($1, $2, $3) RETURNING id", branch.Name, pq.Array(branch.PhoneNumbers), storeID).Scan(&branchID)
+            if err != nil {
+                tx.Rollback()
+                return
+            }
+
+            _, err = tx.Exec("INSERT INTO addresses(city, stree_name, branch_id) VALUES($1, $2, $3)", branch.Address.City, branch.Address.StreetName, branchID)
+
+            for  _, vacancy := range branch.Vacancies {           
+                var vacancyID int     
+
+                err := tx.QueryRow("INSERT INTO vacancies(name, salary) VALUES ($1, $2) RETURNING id", vacancy.Name, vacancy.Salary).Scan(&vacancyID)
+                if err != nil {
+                    tx.Rollback()
+                    return
+                }      
+                
+                _, err = tx.Exec("INSERT INTO branches_vacancies(branch_id, vacancy_id) VALUES($1, $2)", branchID, vacancyID)
+                if err != nil {
+                    tx.Rollback()
+                    return
+                }      
+                
 			}
         }    
 	}
 
 
-        // GET
-    myResp := Response{}
+    // // GET
+    // myResp := Response{}
         
-	storeRows, err := db.Query("SELECT id, name from stores")
-    check(err)
+	// storeRows, err := db.Query("SELECT id, name from stores")
+    // check(err)
 
-    for storeRows.Next() {        
-		store := Store{}
-        err := storeRows.Scan(
-            &store.ID,            
-			&store.Name,
-        )        
-		check(err)
+    // for storeRows.Next() {        
+	// 	store := Store{}
+    //     err := storeRows.Scan(
+    //         &store.ID,            
+	// 		&store.Name,
+    //     )        
+	// 	check(err)
 
-        branchRows, err := db.Query("SELECT id, name, phone_numbers from branches where store_id = $1", store.ID)
-        check(err)  
+    //     branchRows, err := db.Query("SELECT id, name, phone_numbers from branches where store_id = $1", store.ID)
+    //     check(err)  
 
-        for branchRows.Next(){            
-			branch := Branch{}
+    //     for branchRows.Next(){            
+	// 		branch := Branch{}
 
-            err := branchRows.Scan(
-                &branch.ID,                
-				&branch.Name, 
-                pq.Array(&branch.Phone_numbers),            
-			)
-            check(err)
+    //         err := branchRows.Scan(
+    //             &branch.ID,                
+	// 			&branch.Name, 
+    //             pq.Array(&branch.Phone_numbers),            
+	// 		)
+    //         check(err)
 
-            vacancyRows, err := db.Query(`SELECT v.id, v.title FROM vacancies v JOIN branches_vacancies br ON v.id = br.vacancy_id JOIN branches b ON             b.id = br.branch_id WHERE b.id = $1`, branch.ID)
-            check(err)
+    //         vacancyRows, err := db.Query(`SELECT v.id, v.title FROM vacancies v JOIN branches_vacancies br ON v.id = br.vacancy_id JOIN branches b ON             b.id = br.branch_id WHERE b.id = $1`, branch.ID)
+    //         check(err)
 
-            for vacancyRows.Next() {                
-				vacancy := Vacancy{}
+    //         for vacancyRows.Next() {                
+	// 			vacancy := Vacancy{}
 
-                err := vacancyRows.Scan(
-                    &vacancy.ID,                    
-					&vacancy.Title,
-                )                
-				check(err)
-                branch.Vacancy = append(branch.Vacancy, &vacancy)
-            }            
-            store.Branches = append(store.Branches, &branch)    
-        }
+    //             err := vacancyRows.Scan(
+    //                 &vacancy.ID,                    
+	// 				&vacancy.Title,
+    //             )                
+	// 			check(err)
+    //             branch.Vacancy = append(branch.Vacancy, &vacancy)
+    //         }            
+    //         store.Branches = append(store.Branches, &branch)    
+    //     }
 
-        myResp.Stores = append(myResp.Stores, &store)    
-	}
+    //     myResp.Stores = append(myResp.Stores, &store)    
+	// }
 
 	
 	// PRINT
-    for _, store := range myResp.Stores {        
-		fmt.Println(store)
-        for _, branch := range myResp.Branches {            
-			fmt.Println(branch)
-            for _, vacancy := range myResp.Vacancies {                
-				fmt.Println(vacancy)
-            }        
-		}
-    }
+    // for _, store := range myResp.Stores {        
+	// 	fmt.Println(store)
+    //     for _, branch := range myResp.Branches {            
+	// 		fmt.Println(branch)
+    //         for _, vacancy := range myResp.Vacancies {                
+	// 			fmt.Println(vacancy)
+    //         }        
+	// 	}
+    // }
 }
